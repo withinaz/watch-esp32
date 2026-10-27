@@ -48,7 +48,8 @@ param(
     [switch] $DryRun,
     [switch] $Force,
     [switch] $Quiet,
-    [switch] $DumpFingerprint
+    [switch] $DumpFingerprint,
+    [int[]]  $SlotHours = @(9, 20)
 )
 
 Set-StrictMode -Version Latest
@@ -289,14 +290,15 @@ function Get-NewestWriteTime {
 
 function Read-State {
     if (-not (Test-Path $StatePath)) {
-        return [pscustomobject]@{ fingerprint = ''; version = ''; pendingPush = $false; lastRunEpoch = 0; lastMode = '' }
+        return [pscustomobject]@{ fingerprint = ''; version = ''; pendingPush = $false; pendingRetry = $false; attempts = 0; lastRunEpoch = 0; lastMode = '' }
     }
     $raw = Get-Content -Path $StatePath -Raw -Encoding UTF8
     $obj = $raw | ConvertFrom-Json
-    foreach ($field in @('fingerprint', 'version', 'pendingPush', 'lastRunEpoch', 'lastMode')) {
+    foreach ($field in @('fingerprint', 'version', 'pendingPush', 'pendingRetry', 'attempts', 'lastRunEpoch', 'lastMode')) {
         if (-not ($obj.PSObject.Properties.Name -contains $field)) {
             $default = ''
-            if ($field -eq 'pendingPush') { $default = $false }
+            if ($field -in @('pendingPush', 'pendingRetry')) { $default = $false }
+            if ($field -eq 'attempts') { $default = 0 }
             if ($field -eq 'lastRunEpoch') { $default = [int64]0 }
             $obj | Add-Member -NotePropertyName $field -NotePropertyValue $default
         }
@@ -536,6 +538,10 @@ function Restore-Repo {
 
 # --------------------------------------------------------------------------- main
 
+$script:due = $false
+$script:cycleSucceeded = $false
+$state = $null
+
 $mutex = New-Object System.Threading.Mutex($false, 'Global\watch-esp32-publisher')
 if (-not $mutex.WaitOne(0)) {
     Write-Log 'another cycle is already running, skipping' 'warn'
@@ -556,6 +562,23 @@ try {
 
     $state = Read-State
 
+    # Two publication slots a day (09:00 and 20:00 by default). The task runs
+    # every hour, but outside a slot it only does something when a previous cycle
+    # failed: that is the retry-until-success loop, and it costs nothing when
+    # there is nothing to retry.
+    $now = Get-Date
+    $lastEpoch = [int64]0
+    if ($state.PSObject.Properties.Name -contains 'lastRunEpoch') { $lastEpoch = [int64]$state.lastRunEpoch }
+    $hoursSince = ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $lastEpoch) / 3600.0
+
+    $script:due = $Force.IsPresent -or
+                  ($state.pendingRetry -eq $true) -or
+                  ($state.pendingPush -eq $true) -or
+                  ($SlotHours -contains $now.Hour) -or
+                  ($hoursSince -ge 18)
+
+    if (-not $script:due) { return }
+
     # the repository must be clean: manual edits are committed by hand, and a
     # dirty tree means someone is working in it right now
     $status = (Invoke-Git -Arguments @('status', '--porcelain')).Output.Trim()
@@ -572,6 +595,7 @@ try {
             $state.lastMode = 'push-retry'
             Save-State $state
             Write-Log 'push retry succeeded'
+            $script:cycleSucceeded = $true
         } else {
             Write-Log ("push retry failed: {0}" -f $push.Output) 'error'
         }
@@ -582,6 +606,7 @@ try {
     $fingerprint = Get-Fingerprint $entries
 
     if ($fingerprint -eq $state.fingerprint -and -not $Force) {
+        $script:cycleSucceeded = $true
         # Silent by default, but one line per hour proves the task is alive
         # without filling the log with "nothing happened" every five minutes.
         $lastEpoch = [int64]0
@@ -641,6 +666,7 @@ try {
         $state.fingerprint = $fingerprint
         Save-State $state
         Write-Log 'nothing to publish, state updated'
+            $script:cycleSucceeded = $true
         return
     }
 
@@ -657,6 +683,7 @@ try {
 
     if ($DryRun) {
         Write-Log ("dry run: would publish {0}, {1} file(s) changed" -f $mode, $changed.Count)
+        $script:cycleSucceeded = $true
         foreach ($file in $changed) { Write-Log "  $file" }
         return
     }
@@ -668,6 +695,7 @@ try {
         $state.fingerprint = $fingerprint
         Save-State $state
         Write-Log 'no file change after all, state updated'
+            $script:cycleSucceeded = $true
         return
     }
 
@@ -705,6 +733,7 @@ Flashed as firmware/$firmwareFolder/montre.bin at offset 0x200000.
         $state.lastMode = 'version'
         Save-State $state
         Write-Log "published v$number ($($changed.Count) file(s), $($image.Size) bytes)"
+        $script:cycleSucceeded = $true
 
         # release notes, best effort: a missing gh must not fail the publish,
         # and a clone that is not the canonical repository must never publish
@@ -760,6 +789,7 @@ Full notes: [CHANGELOG]($RepoUrl/blob/main/CHANGELOG.md).
         $state.lastMode = 'snapshot'
         Save-State $state
         Write-Log "published snapshot ($($changed.Count) file(s))"
+        $script:cycleSucceeded = $true
     }
 }
 catch {
@@ -769,6 +799,24 @@ catch {
     exit 1
 }
 finally {
+    # A cycle that was due but did not reach a success point is retried by the
+    # next hourly run, for as long as it takes. A successful one clears the flag.
+    if ($script:due -and -not $DryRun -and $null -ne $state) {
+        if ($script:cycleSucceeded) {
+            if ($state.pendingRetry -eq $true -or [int]$state.attempts -gt 0) {
+                $state.pendingRetry = $false
+                $state.attempts = 0
+                Save-State $state
+                Write-Log 'previous failure cleared'
+            }
+        } else {
+            $state.pendingRetry = $true
+            $state.attempts = [int]$state.attempts + 1
+            Save-State $state
+            Write-Log ("cycle incomplete, retry at the next hourly run (attempt {0})" -f $state.attempts) 'warn'
+        }
+    }
+
     $mutex.ReleaseMutex()
     $mutex.Dispose()
 }

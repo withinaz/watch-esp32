@@ -11,15 +11,18 @@ and the toolset. There is no hook that says "a file changed, go publish it", and
 a plugin would only run while the harness is open.
 
 What runs instead is a **Windows scheduled task**, `watch-esp32-publisher`, that
-calls `tools/publish/publish-session.ps1` twice a day, at 09:00 and 20:00 local
-time. It is independent of any session, of the interface, and of which agent is
-driving.
+runs `tools/publish/publish-session.ps1` **every hour**. Publishing only happens
+in two slots — 09:00 and 20:00 local time — and, at any other hour, only when a
+previous cycle did not complete. The task is therefore also the retry loop: a
+failed publication is attempted again one hour later, and again after that,
+until a cycle succeeds. It is independent of any session, of the interface, and
+of which agent is driving.
 
 ```powershell
 # install / remove
-.\tools\publish\install-publisher.ps1
-.\tools\publish\install-publisher.ps1 -At 08:30,21:00   # other times
-.\tools\publish\install-publisher.ps1 -EveryMinutes 5   # rapid polling, working session
+.\tools\publish\install-publisher.ps1                  # hourly, slots 09:00 and 20:00
+.\tools\publish\install-publisher.ps1 -SlotHours 8,21    # other slot hours
+.\tools\publish\install-publisher.ps1 -Rapid             # every 5 min, no slots
 .\tools\publish\install-publisher.ps1 -Remove
 
 # one cycle by hand
@@ -82,6 +85,7 @@ A publisher that pushes to a public repository unattended needs to fail closed.
 | Atomic rollback | A cycle that aborts after touching files runs `git reset` + `checkout` + `clean` on the paths it owns, so the publisher cannot wedge itself |
 | One cycle at a time | Global mutex |
 | Push failure | The commit stays local, `pendingPush` is set, the next cycle retries the push before doing anything else |
+| Any incomplete cycle | `pendingRetry` is set and the next hourly run retries; the count is kept in `state.json` as `attempts` and the retry stops only on a cycle that completes |
 | Release safety | A release is only created when `origin` is the canonical `withinaz/watch-esp32`; a clone can never publish onto it |
 
 ## Reading it
@@ -91,10 +95,9 @@ Get-Content "$env:LOCALAPPDATA\watch-esp32-publisher\publish.log" -Tail 30
 Get-Content "$env:LOCALAPPDATA\watch-esp32-publisher\state.json"
 ```
 
-The log is append-only, rotated at 1 MB. Every line is one decision. A cycle that
-finds nothing new writes nothing at all, apart from one `heartbeat` line when more
-than an hour has passed since the last one - with two runs a day, that is the proof
-it is alive:
+The log is append-only, rotated at 1 MB. Every line is one decision. Between the
+slots, a cycle with nothing to retry writes nothing at all; at a slot, a cycle with
+nothing to publish leaves one `heartbeat` line, which is the proof it is alive:
 
 ```
 cycle: mode=version repo=3.5.0 session=v3.6 fingerprint=f005d75fcde7
