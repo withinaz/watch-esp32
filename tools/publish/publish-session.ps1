@@ -235,28 +235,37 @@ function Get-LatestBackupImage {
 function Get-Fingerprint {
     param($Entries)
 
-    $builder = New-Object System.Text.StringBuilder
-    foreach ($entry in ($Entries | Sort-Object Relative)) {
+    # Every line is "relative-path=sha256". They are sorted with an ORDINAL
+    # comparer, not with Sort-Object: .NET Framework (PowerShell 5.1, used by
+    # the scheduled task) and .NET 8 (pwsh 7) collate '-', '_' and digits
+    # differently, which produced two different fingerprints for the same tree.
+    $lines = New-Object System.Collections.Generic.List[string]
+
+    foreach ($entry in $Entries) {
         $hash = (Get-FileHash $entry.Source -Algorithm SHA256).Hash
-        [void]$builder.Append($entry.Relative).Append('=').Append($hash).Append("`n")
+        $lines.Add(($entry.Relative + '=' + $hash))
     }
 
     $versionsFile = Join-Path $BackupPath 'VERSIONS.md'
     if (Test-Path $versionsFile) {
-        [void]$builder.Append('versions=').Append((Get-FileHash $versionsFile -Algorithm SHA256).Hash).Append("`n")
+        $lines.Add('versions=' + (Get-FileHash $versionsFile -Algorithm SHA256).Hash)
     }
 
     $image = Get-LatestBackupImage
     if ($null -ne $image) {
-        [void]$builder.Append('image=').Append($image.Major).Append('.').Append($image.Minor).Append('=').Append($image.Hash).Append("`n")
+        $lines.Add('image=' + $image.Major + '.' + $image.Minor + '=' + $image.Hash)
     }
 
+    $sorted = $lines.ToArray()
+    [Array]::Sort($sorted, [System.StringComparer]::Ordinal)
+    $material = ($sorted -join "`n") + "`n"
+
     if ($DumpFingerprint) {
-        Set-Content -Path ($StatePath + '.fingerprint.txt') -Value $builder.ToString() -Encoding UTF8
+        Set-Content -Path ($StatePath + '.fingerprint.txt') -Value $material -Encoding UTF8
     }
 
     $sha = [System.Security.Cryptography.SHA256]::Create()
-    $digest = $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($builder.ToString()))
+    $digest = $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($material))
     return ([System.BitConverter]::ToString($digest) -replace '-', '').ToLowerInvariant()
 }
 
