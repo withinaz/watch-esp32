@@ -11,12 +11,15 @@ and the toolset. There is no hook that says "a file changed, go publish it", and
 a plugin would only run while the harness is open.
 
 What runs instead is a **Windows scheduled task**, `watch-esp32-publisher`, that
-calls `tools/publish/publish-session.ps1` every 5 minutes. It is independent of
-any session, of the interface, and of which agent is driving.
+calls `tools/publish/publish-session.ps1` twice a day, at 09:00 and 20:00 local
+time. It is independent of any session, of the interface, and of which agent is
+driving.
 
 ```powershell
 # install / remove
 .\tools\publish\install-publisher.ps1
+.\tools\publish\install-publisher.ps1 -At 08:30,21:00   # other times
+.\tools\publish\install-publisher.ps1 -EveryMinutes 5   # rapid polling, working session
 .\tools\publish\install-publisher.ps1 -Remove
 
 # one cycle by hand
@@ -88,7 +91,10 @@ Get-Content "$env:LOCALAPPDATA\watch-esp32-publisher\publish.log" -Tail 30
 Get-Content "$env:LOCALAPPDATA\watch-esp32-publisher\state.json"
 ```
 
-The log is append-only, rotated at 1 MB. Every line is one decision:
+The log is append-only, rotated at 1 MB. Every line is one decision. A cycle that
+finds nothing new writes nothing at all, apart from one `heartbeat` line when more
+than an hour has passed since the last one - with two runs a day, that is the proof
+it is alive:
 
 ```
 cycle: mode=version repo=3.5.0 session=v3.6 fingerprint=f005d75fcde7
