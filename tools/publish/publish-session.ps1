@@ -47,7 +47,8 @@ param(
     [int]    $SettleMinutes = 3,
     [switch] $DryRun,
     [switch] $Force,
-    [switch] $Quiet
+    [switch] $Quiet,
+    [switch] $DumpFingerprint
 )
 
 Set-StrictMode -Version Latest
@@ -248,6 +249,10 @@ function Get-Fingerprint {
     $image = Get-LatestBackupImage
     if ($null -ne $image) {
         [void]$builder.Append('image=').Append($image.Major).Append('.').Append($image.Minor).Append('=').Append($image.Hash).Append("`n")
+    }
+
+    if ($DumpFingerprint) {
+        Set-Content -Path ($StatePath + '.fingerprint.txt') -Value $builder.ToString() -Encoding UTF8
     }
 
     $sha = [System.Security.Cryptography.SHA256]::Create()
