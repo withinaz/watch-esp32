@@ -275,13 +275,16 @@ function Get-NewestWriteTime {
 
 function Read-State {
     if (-not (Test-Path $StatePath)) {
-        return [pscustomobject]@{ fingerprint = ''; version = ''; pendingPush = $false; lastRun = ''; lastMode = '' }
+        return [pscustomobject]@{ fingerprint = ''; version = ''; pendingPush = $false; lastRunEpoch = 0; lastMode = '' }
     }
     $raw = Get-Content -Path $StatePath -Raw -Encoding UTF8
     $obj = $raw | ConvertFrom-Json
-    foreach ($field in @('fingerprint', 'version', 'pendingPush', 'lastRun', 'lastMode')) {
+    foreach ($field in @('fingerprint', 'version', 'pendingPush', 'lastRunEpoch', 'lastMode')) {
         if (-not ($obj.PSObject.Properties.Name -contains $field)) {
-            $obj | Add-Member -NotePropertyName $field -NotePropertyValue $(if ($field -eq 'pendingPush') { $false } else { '' })
+            $default = ''
+            if ($field -eq 'pendingPush') { $default = $false }
+            if ($field -eq 'lastRunEpoch') { $default = [int64]0 }
+            $obj | Add-Member -NotePropertyName $field -NotePropertyValue $default
         }
     }
     return $obj
@@ -292,7 +295,12 @@ function Save-State {
 
     $dir = Split-Path -Parent $StatePath
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
-    $State.lastRun = (Get-Date).ToString('o')
+    $epoch = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    if ($State.PSObject.Properties.Name -contains 'lastRunEpoch') {
+        $State.lastRunEpoch = $epoch
+    } else {
+        $State | Add-Member -NotePropertyName lastRunEpoch -NotePropertyValue $epoch
+    }
     $State | ConvertTo-Json -Depth 4 | Set-Content -Path $StatePath -Encoding UTF8
 }
 
@@ -562,11 +570,9 @@ try {
     if ($fingerprint -eq $state.fingerprint -and -not $Force) {
         # Silent by default, but one line per hour proves the task is alive
         # without filling the log with "nothing happened" every five minutes.
-        $lastSeen = [datetime]::MinValue
-        if ($state.lastRun -ne '') {
-            try { $lastSeen = [datetime]::Parse($state.lastRun) } catch { $lastSeen = [datetime]::MinValue }
-        }
-        if (((Get-Date) - $lastSeen).TotalMinutes -ge 60) {
+        $lastEpoch = [int64]0
+        if ($state.PSObject.Properties.Name -contains 'lastRunEpoch') { $lastEpoch = [int64]$state.lastRunEpoch }
+        if (([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $lastEpoch) -ge 3600) {
             $state.fingerprint = $fingerprint
             Save-State $state
             Write-Log 'heartbeat: no change since the last publish'
