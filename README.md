@@ -18,14 +18,15 @@
   <img alt="Language" src="https://img.shields.io/badge/C%2B%2B-17-00599C">
 </p>
 
-<p align="center">
-  <img src="docs/img/launcher-settings.png" width="180" alt="Launcher, page 1: Paramètres">
-  <img src="docs/img/launcher-assistant.png" width="180" alt="Launcher, page 2: Assistant">
-  <img src="docs/img/icon-music.png" width="150" alt="Musique app icon">
-  <br>
-  <sub>Real framebuffer dumps from the watch — the launcher gives each app one full page,<br>
-  with a 150 × 150 icon drawn pixel by pixel at build time.</sub>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="middle"><img src="docs/img/launcher-settings.png" width="176" alt="Launcher, page 1: Paramètres"><br><sub>page 1 — Paramètres</sub></td>
+    <td align="center" valign="middle"><img src="docs/img/launcher-assistant.png" width="176" alt="Launcher, page 2: Assistant"><br><sub>page 2 — Assistant</sub></td>
+    <td align="center" valign="middle"><img src="docs/img/icon-music.png" width="124" alt="Musique app icon"><br><sub>page 3 — Musique</sub></td>
+  </tr>
+</table>
+
+<p align="center"><sub>Real framebuffer dumps from the watch. One app per page, each with a 150 × 150 icon<br>drawn pixel by pixel at build time — no image assets, no runtime cost.</sub></p>
 
 ---
 

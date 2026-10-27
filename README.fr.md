@@ -16,14 +16,15 @@
   <img alt="LVGL" src="https://img.shields.io/badge/LVGL-9.3-6B57FF">
 </p>
 
-<p align="center">
-  <img src="docs/img/launcher-settings.png" width="180" alt="Lanceur, page 1 : Paramètres">
-  <img src="docs/img/launcher-assistant.png" width="180" alt="Lanceur, page 2 : Assistant">
-  <img src="docs/img/icon-music.png" width="150" alt="Icône de l'app Musique">
-  <br>
-  <sub>Captures réelles du tampon d'affichage de la montre. Une application par page,<br>
-  chacune avec son icône 150 × 150 dessinée au pixel près à la compilation.</sub>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" valign="middle"><img src="docs/img/launcher-settings.png" width="176" alt="Lanceur, page 1 : Paramètres"><br><sub>page 1 — Paramètres</sub></td>
+    <td align="center" valign="middle"><img src="docs/img/launcher-assistant.png" width="176" alt="Lanceur, page 2 : Assistant"><br><sub>page 2 — Assistant</sub></td>
+    <td align="center" valign="middle"><img src="docs/img/icon-music.png" width="124" alt="Icône de l'app Musique"><br><sub>page 3 — Musique</sub></td>
+  </tr>
+</table>
+
+<p align="center"><sub>Captures réelles du tampon d'affichage de la montre. Une application par page, chacune<br>avec son icône 150 × 150 dessinée au pixel près à la compilation — aucun asset, aucun coût au runtime.</sub></p>
 
 ---
 
