@@ -1,0 +1,36 @@
+watch-esp32
+Copyright 2026 Hervé Jacob
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes the following third-party components, each under its own licence:
+
+  esp-brookesia 0.5.0
+  Copyright Espressif Systems (Shanghai) CO LTD
+  Apache License 2.0 — vendored in components/esp_brookesia, modified.
+  Modifications: LVGL 9.3 constraint, orange status bar geometry, one-app-per-page
+  launcher, status bar root accessor. See docs/interface.md section 5.
+
+  LVGL 9.3
+  Copyright LVGL Kft
+  MIT License — fetched by the component manager (managed_components/lvgl__lvgl).
+
+  Waveshare ESP32-S3-Touch-AMOLED-2.06 BSP
+  Copyright Waveshare
+  Apache License 2.0 — fetched by the component manager.
+
+  esp_websocket_client, esp_codec_dev, esp_lvgl_port
+  Copyright Espressif Systems (Shanghai) CO LTD
+  Apache License 2.0 — fetched by the component manager.
+
+  78/esp-opus
+  Opus, copyright Xiph.Org Foundation and contributors
+  BSD 3-Clause — fetched by the component manager.
+
+  XiaoZhi protocol
+  The wire protocol implemented by main/xiaozhi_client.cpp interoperates with
+  the xiaozhi-esp32 server family (https://github.com/78/xiaozhi-esp32).
+  No source code from that project is included here.
+
+The files under firmware/ are binaries built from the sources in this
+repository, published under the same licence as the sources.
