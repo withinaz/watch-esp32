@@ -1,0 +1,11 @@
+dependencies:
+  idf: ">=5.3"
+  # BSP officiel Waveshare : ecran CO5300, tactile FT3168, audio ES8311/ES7210, SD, I2C
+  waveshare/esp32_s3_touch_amoled_2_06: "^2.0.0"
+  # LVGL 9.3 : requis par esp_lvgl_port 2.x (tire par le BSP)
+  lvgl/lvgl: "9.3.*"
+  # ESP-Brookesia 0.5 est fourni en composant local (components/esp_brookesia)
+  # Assistant vocal : transport du protocole XiaoZhi
+  espressif/esp_websocket_client: "1.5.0"
+  # Codec Opus (libopus en virgule fixe, API standard)
+  78/esp-opus: "1.0.5"

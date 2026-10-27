@@ -1,0 +1,23 @@
+# Build outputs and local state — never committed
+build/
+managed_components/
+sdkconfig.old
+sdkconfig.ci
+
+# Logs, captures and screen dumps produced while debugging on the bench
+*.log
+serial-*.log
+snap-log.txt
+touch-log.txt
+auto*.txt
+snaps/
+snap-icons/
+snap-anim/
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store

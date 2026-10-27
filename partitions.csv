@@ -1,0 +1,10 @@
+# Layout aligne sur le firmware d'usine : la partition nvs (identifiants WiFi)
+# reste a 0x3B000, donc elle survit a un flash de l'application.
+# Name,     Type, SubType, Offset,   Size,     Flags
+nvsfactory, data, nvs,     0x9000,   0x32000,
+nvs,        data, nvs,     0x3B000,  0xD2000,
+otadata,    data, ota,     0x10D000, 0x2000,
+phy_init,   data, phy,     0x10F000, 0x1000,
+model,      data, spiffs,  0x110000, 0xF0000,
+factory,    app,  factory, 0x200000, 0x800000,
+storage,    data, spiffs,  0xA00000, 0x600000,
