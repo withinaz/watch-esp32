@@ -7,7 +7,13 @@ its own version rule: **MAJOR only increases when an application is added**
 
 ## [Unreleased]
 
-Nothing yet. Candidate work is listed in [ROADMAP.md](ROADMAP.md).
+### Added
+- 	ools/publish/: the scheduled publisher that mirrors this development
+  session into the repository automatically. A version declared in the session
+  becomes a release; any other change becomes a snapshot commit. See
+  [docs/auto-publish.md](docs/auto-publish.md).
+
+Candidate work is listed in [ROADMAP.md](ROADMAP.md).
 
 ## [3.5.0] — 2026-10-27
 
