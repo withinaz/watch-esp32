@@ -172,6 +172,7 @@ mesure qui l'a identifié, et le correctif.
 | [`docs/diagnostics.md`](docs/diagnostics.md) | capture série, captures d'écran, compteur par ligne, options d'autotest |
 | [`docs/versions.md`](docs/versions.md) | ce que chaque version a changé, y compris les abandonnées |
 | [`docs/versioning.md`](docs/versioning.md) | politique de version, liste de publication, étiquetage |
+| [`docs/auto-publish.md`](docs/auto-publish.md) | comment la session de developpement est repliquee ici automatiquement |
 | [`ROADMAP.md`](ROADMAP.md) | la suite |
 
 ## Limites connues

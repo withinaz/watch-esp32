@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy this file to publish.config.json (ignored by git) and point it at your machine.",
+  "projectPath": "C:\\path\\to\\esp32\\montre",
+  "backupPath": "C:\\path\\to\\esp32\\backup"
+}

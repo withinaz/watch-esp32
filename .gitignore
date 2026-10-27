@@ -21,3 +21,7 @@ snap-anim/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# machine-specific paths for tools/publish
+tools/publish/publish.config.json
+

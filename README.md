@@ -223,6 +223,7 @@ A sample:
 | [`docs/diagnostics.md`](docs/diagnostics.md) | Serial capture, screen dumps, per-row flush counter, autotest build flags |
 | [`docs/versions.md`](docs/versions.md) | What every version changed and why, including the abandoned ones |
 | [`docs/versioning.md`](docs/versioning.md) | Version policy, release checklist, tagging |
+| [`docs/auto-publish.md`](docs/auto-publish.md) | How the development session is mirrored to this repository automatically |
 | [`ROADMAP.md`](ROADMAP.md) | Where this goes next |
 
 ## Known limitations
