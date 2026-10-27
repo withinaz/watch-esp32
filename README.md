@@ -18,6 +18,8 @@
   <img alt="Language" src="https://img.shields.io/badge/C%2B%2B-17-00599C">
 </p>
 
+<p align="center"><sub><b>English</b> · <a href="README.fr.md">Français</a></sub></p>
+
 <table align="center">
   <tr>
     <td align="center" valign="middle"><img src="docs/img/launcher-settings.png" width="176" alt="Launcher, page 1: Paramètres"><br><sub>page 1 — Paramètres</sub></td>

@@ -16,6 +16,8 @@
   <img alt="LVGL" src="https://img.shields.io/badge/LVGL-9.3-6B57FF">
 </p>
 
+<p align="center"><sub><a href="README.md">English</a> · <b>Français</b></sub></p>
+
 <table align="center">
   <tr>
     <td align="center" valign="middle"><img src="docs/img/launcher-settings.png" width="176" alt="Lanceur, page 1 : Paramètres"><br><sub>page 1 — Paramètres</sub></td>
