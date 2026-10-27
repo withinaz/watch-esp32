@@ -1,0 +1,62 @@
+name: Bug report
+description: Something does not work on the watch
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. The two most useful things you can give are the
+        serial log and *where* on the panel the problem is.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Contents of `VERSION`, or the release you flashed.
+      placeholder: "3.5.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Launcher
+        - Paramètres (settings)
+        - Assistant (voice)
+        - Musique
+        - Boot / flashing
+        - Build
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you do, and what happened?
+      description: Include whether you used a finger or a script to reproduce it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Serial log
+      description: |
+        `python tools/capture.py COM4 serial.log 30`, then paste from boot to the
+        problem. Remove anything personal (SSID, IP) before pasting.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read docs/pitfalls.md and this is not one of the 21 documented traps
+          required: true
+        - label: I removed personal data (WiFi names, IP addresses, tokens) from the log
+          required: true

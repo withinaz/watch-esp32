@@ -1,0 +1,36 @@
+name: verify
+
+# The firmware itself is built with ESP-IDF on a workstation and flashed on the
+# board before it is published. This workflow checks what a machine can check:
+# version/CHANGELOG consistency, firmware checksums, repository hygiene and
+# documentation links.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check repository
+        run: python tools/verify_repo.py
+
+      - name: Check that the project files the build needs are present
+        run: |
+          for f in CMakeLists.txt partitions.csv sdkconfig.defaults \
+                   main/CMakeLists.txt main/idf_component.yml dependencies.lock; do
+            test -f "$f" || { echo "missing $f"; exit 1; }
+          done
+          echo "build inputs present"

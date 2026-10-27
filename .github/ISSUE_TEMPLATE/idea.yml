@@ -1,0 +1,41 @@
+name: Idea or feature request
+description: Something the watch should do
+title: "[idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are read, and the realistic ones end up in
+        [ROADMAP.md](https://github.com/withinaz/watch-esp32/blob/main/ROADMAP.md).
+        Please check the "explicitly not planned" section first.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should the watch do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is it worth the flash space?
+      description: |
+        Every application takes a launcher page, ~90 KB for its icon, and part of
+        the 8 MB application slot. A fourth app also makes this a major version.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: hardware
+    attributes:
+      label: Does it need hardware that is already on the board?
+      options:
+        - "No new hardware (LVGL only)"
+        - "Uses an existing sensor (IMU, RTC, battery gauge, microSD)"
+        - "Uses WiFi or Bluetooth"
+        - "Needs a companion app on the phone"
+        - "Needs new hardware"
+    validations:
+      required: true
