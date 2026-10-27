@@ -560,6 +560,17 @@ try {
     $fingerprint = Get-Fingerprint $entries
 
     if ($fingerprint -eq $state.fingerprint -and -not $Force) {
+        # Silent by default, but one line per hour proves the task is alive
+        # without filling the log with "nothing happened" every five minutes.
+        $lastSeen = [datetime]::MinValue
+        if ($state.lastRun -ne '') {
+            try { $lastSeen = [datetime]::Parse($state.lastRun) } catch { $lastSeen = [datetime]::MinValue }
+        }
+        if (((Get-Date) - $lastSeen).TotalMinutes -ge 60) {
+            $state.fingerprint = $fingerprint
+            Save-State $state
+            Write-Log 'heartbeat: no change since the last publish'
+        }
         return
     }
 
