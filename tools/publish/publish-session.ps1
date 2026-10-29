@@ -192,7 +192,8 @@ function Get-SessionVersions {
             $current = [pscustomobject]@{
                 Major = [int]$Matches[1]
                 Minor = [int]$Matches[2]
-                Title = $Matches[3]
+                # a trailing *(version courante)* marker is not part of the title
+                Title = ($Matches[3] -replace '\s*\*\([^)]*\)\*\s*$', '').Trim()
                 Body  = ''
             }
             $body.Clear()

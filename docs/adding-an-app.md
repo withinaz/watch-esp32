@@ -1,6 +1,6 @@
 # Adding an application
 
-The next major version (**v4**) is defined as "a fourth application": the rule
+The next major version (**v5**) is defined as "a fifth application": the rule
 is that `MAJOR` only increases when an app is added. This is the whole procedure.
 
 ## 1. The class

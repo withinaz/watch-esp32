@@ -4,16 +4,16 @@ Every release of this project ships a **verified, ready-to-flash** image here.
 Nothing is rebuilt at flash time, so what lands on the board is exactly what
 was tested on the bench.
 
-## v3.5 — current
+## v4.0 — current
 
 | | |
 |---|---|
-| Application | `v3.5/montre.bin` — **3 486 160 bytes** |
-| SHA-256 | `aecb03997166e2ad88f6f52b553427cf0419e7aa39dfb83d93e7d5d654010b64` |
+| Application | `v4.0/montre.bin` — **3 589 296 bytes** |
+| SHA-256 | `51ca2508dba666b339d33a8d35b85d54eb90d478980369837379327daac34d43` |
 | Write offset | **`0x200000`** |
-| Bootloader | `v3.5/bootloader.bin` — `0x0` |
-| Partition table | `v3.5/partition-table.bin` — `0x8000` |
-| Apps | Paramètres, Assistant, Musique |
+| Bootloader | `v4.0/bootloader.bin` — `0x0` |
+| Partition table | `v4.0/partition-table.bin` — `0x8000` |
+| Apps | Paramètres, Assistant, Musique, Perplexe |
 
 `SHA256SUMS` lists every image; `flash.ps1` checks all of them **before**
 touching the port and refuses to flash on a mismatch.
@@ -35,7 +35,7 @@ With esptool directly:
 
 ```powershell
 python -m esptool --chip esp32s3 -p COM4 -b 921600 --before default_reset `
-  --after hard_reset write_flash 0x200000 v3.5\montre.bin
+  --after hard_reset write_flash 0x200000 v4.0\montre.bin
 ```
 
 ## Expected boot log
@@ -52,8 +52,8 @@ MONTRE: NTP : heure synchronisee -> ...
 ```
 
 No `Guru Meditation`, no `abort()`, and no `Clock out of area, hide it`.
-`create a new page` appears once per app beyond the first — with three apps it
-shows up twice, and that line is the proof that each app owns its own page.
+`create a new page` appears once per app beyond the first — with four apps it
+shows up three times, and that line is the proof that each app owns its own page.
 
 ## Older versions
 

@@ -9,7 +9,7 @@ means. Nothing here is committed to a date.
 |---|---|---|---|---|
 | 1 | **Touch inside applications** | Without it, no app can offer a usable button — it is the real blocker for everything else | ? | a tap on a button in the Assistant is delivered to the app and logged |
 | 2 | **The 2–3 pixel residue at the top** | Open defect; three fixes failed | ? | opening an app with a finger leaves no launcher pixel |
-| 3 | **Fourth application (v4.0)** | The versioning rule reserves a major bump for it | M | a new page 4 with its own icon, tested on the watch |
+| 3 | ~~Fourth application (v4.0)~~ | **Done** — Perplexe shipped in v4.0 | — | — |
 | 4 | **BLE notifications** | A watch that does not show your phone's messages is a demo | L | a notification from a phone appears in an app |
 | 5 | **OTA updates** | Currently every update needs a USB cable | M | the watch updates itself over WiFi, with a rollback slot |
 
@@ -55,21 +55,26 @@ and last row written by the flush callback between those events. The per-row
 counter already exists ([diagnostics.md](docs/diagnostics.md)); it only needs a
 time window instead of a total.
 
-## 3. The fourth application (v4.0)
+## 3. The fourth application — done
 
-Candidates, each of which would take page 4 and its own icon:
+**Perplexe shipped in v4.0** (page 4): a 19 × 17 marble maze, ten generated
+levels, steered by the accelerometer. It also proved that touch works inside an
+application — see [pitfall 24](docs/pitfalls.md#24-touch-does-work-in-a-new-application)
+— which narrows the Assistant defect considerably.
+
+What it left behind: the IMU is now correctly addressed (`0x6B`) and correctly
+scaled (8192 counts per g), so the next sensor application starts from a sensor
+that tells the truth.
+
+The fifth application would open **v5.0** and take page 5. The candidates that
+remain interesting:
 
 | Idea | Uses | Notes |
 |---|---|---|
-| **Chronometer / stopwatch** | nothing but LVGL | trivial, but proves the pattern end to end |
-| **Compass and level** | QMI8658 | the IMU is already wired and calibrated; a bubble level is genuinely useful |
+| **Compass and level** | QMI8658 | now that the axes are mapped, it is nearly free |
 | **Sleep / activity** | QMI8658 + AXP2101 | needs a background sampler and flash storage |
 | **Photo frame** | microSD | reads JPEGs from the card; proves the storage path |
-| **Game (Snake, 2048)** | touch | depends on item 1 — no touch, no game |
-
-Recommendation: **compass/level** first. It exercises the sensor page's code
-outside the Settings app, needs no network and no touch, and its output is
-immediately verifiable by tilting the watch.
+| **Chronometer** | nothing but LVGL | trivial, but a useful reference implementation |
 
 ## 4. BLE notifications
 
@@ -83,7 +88,7 @@ or a tone on arrival. Then: dismiss from the watch, and a battery cost budget
 
 The partition table has `otadata` but only **one** application slot
 (`factory`, 8 MB). A real OTA needs two slots. Splitting the 8 MB factory
-partition into `ota_0` / `ota_1` of 4 MB each is possible (the app is 3.49 MB)
+partition into `ota_0` / `ota_1` of 4 MB each is possible (the app is 3.59 MB)
 and does not touch `nvs`, but it is a one-way layout change: going back to the
 factory firmware would then need a full 16 MB write.
 

@@ -134,7 +134,7 @@ Things that are **normal** and look like errors:
 | Line | Meaning |
 |---|---|
 | `i2c.master: Please check pull-up resistances` | benign on this board, all reads succeed |
-| `create a new page` twice | one per app beyond the first — three apps, two lines |
+| `create a new page` three times | one per app beyond the first — four apps, three lines |
 | `sdmmc: no card` after ~6 s | no microSD inserted; the mount is retried by the app only |
 | `wifi: ... reason 2` at boot | first association attempt, retried automatically |
 

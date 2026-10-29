@@ -1,12 +1,13 @@
 # Pitfalls already paid for
 
-Twenty-one problems that cost real time on this board, in the order they were
+Twenty-five problems that cost real time on this board, in the order they were
 found. Each one lists the symptom as it appeared, the measurement that
 identified it, and the fix that survived. Several are specific to
 esp-brookesia + LVGL 9.3 + this panel; the reasoning generalises.
 
 If you are porting this firmware to another board, read 6, 7, 8, 17, 18 and 19
-before you start — they are the ones that look like something else.
+before you start — they are the ones that look like something else. 22 and 23
+are the ones that make a sensor lie to you.
 
 ---
 
@@ -376,3 +377,73 @@ The one measurable difference between the failing and passing cases is the
 **finger**, not the pixel composition. Anyone picking this up should start
 there: instrument `LV_EVENT_PRESSED` → `RELEASED` → `CLICKED` on a real touch
 sequence, and log the icon's absolute coordinates plus its scale at each step.
+
+---
+
+## 22. The IMU answers at `0x6B`, and its scale is 8192 counts per g
+
+**Symptom.** The Sensors page had said `QMI8658 introuvable` since the first
+version — and a shake test fired permanently, because at rest the magnitude read
+**2.00 g**.
+
+**Cause.** Two independent mistakes. This board wires the QMI8658 at **`0x6B`**,
+not at the datasheet default `0x6A` the driver scanned. And `CTRL2 = 0x95`
+selects the **±4 g** range, which is **8192 counts per g**, not the 4096 the
+conversion assumed.
+
+**Fix.** Both applications try `0x6A`, then `0x6B`, and divide by 8192. The
+control that cannot lie: **`|a|` must read 1.00 g at rest.** A sensor that
+reports a plausible gravity but the wrong magnitude is worse than a missing one,
+because every threshold built on it is silently wrong.
+
+---
+
+## 23. The IMU axes are rotated a quarter turn from the screen
+
+**Symptom.** In the maze, tilting the right edge down made the ball go **up**.
+
+**Cause.** Not a sign to flip: an **axis permutation**. The chip's X runs down
+the screen and its Y runs to the left.
+
+**Fix.** `imu_to_screen()` remaps the pair into the screen frame. Three firm
+tilts (right, left, bottom) are enough to disambiguate — but only on the board:
+the documentation of the module does not tell you which way it was glued.
+
+---
+
+## 24. Touch does work in a new application
+
+**Symptom.** None — this is the trap of assuming the opposite.
+
+**What was believed.** After the Assistant, a general conclusion had formed:
+"touch does not work inside applications". It was wrong. On the fourth app,
+buttons worked on the first try (a replay button, a quit button, and a counter
+of received taps).
+
+**What it means.** The launcher, Settings and Perplexe all receive the finger;
+only the Assistant is mute. The defect is therefore **in that application**, not
+in the event router of esp-brookesia — and a screen built the way Settings is
+built receives the tap.
+
+**Lesson.** Before generalising a defect to a layer, find one case where the
+layer works. Here, three cases existed all along.
+
+---
+
+## 25. Audio inside Perplexe broke the display
+
+**Symptom.** A v4.1 attempt added three small sounds to the maze. As soon as the
+codec was opened from that application, the launcher icon became **visible again
+over the screen** and the display was clipped.
+
+**What was ruled out.** The codec opened cleanly — `audio pret` at 110 ms, no
+I2S error, no freeze, no watchdog. The defect is on the **rendering** side, not
+in the audio path.
+
+**Status.** Undiagnosed, and the reason v4.0 was kept **without sound**; the
+v4.1 binary was deleted. The lead to follow: the moment the codec opens, just
+after `build_ui()`, therefore during the screen transition, and the load the
+audio init puts on that particular moment.
+
+**Rule.** An application that draws a continuously animated scene does not get
+audio without a measurement plan — the two other audio apps are static screens.

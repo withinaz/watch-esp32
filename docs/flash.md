@@ -84,7 +84,7 @@ MONTRE: NTP : heure synchronisee -> ...
 ```
 
 A clean boot has no `Guru Meditation`, no `abort()`, no `Clock out of area,
-hide it`, and `create a new page` appears **twice** for three apps (once per app
+hide it`, and `create a new page` appears **three times** for four apps (once per app
 beyond the first) — that line is the proof that each app owns its own page.
 
 ## If the board does not come back

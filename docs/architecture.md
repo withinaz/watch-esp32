@@ -36,6 +36,7 @@ Everything that talks to I2C off the LVGL task is deliberate — see
 | `xz_mic` | 7 | **64 KB static, in PSRAM** | 1 | ES7210 → Opus encode → WebSocket |
 | `xz_spk` | 6 | **48 KB static, in PSRAM** | 1 | WebSocket → Opus decode → ES8311 |
 | `mus_audio` | 5 | 8 KB | 0 | music sequencer + synthesis, paces itself on `esp_codec_dev_write` |
+| `prx_imu` | 3 | 4 KB | 0 | accelerometer sampling at 30 Hz for the maze, atomics only |
 | `xz_start` | 5 | 8 KB | 0 | app-open hand-off, so `run()` stays short |
 
 The two audio stacks are the reason `CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY`
@@ -60,7 +61,7 @@ RAM. Symptom if you get this wrong: `vApplicationStackOverflowHook`, then
 
 The project reproduces the factory layout **exactly**, which is what lets an
 application-only flash keep the `nvs` partition — and therefore the WiFi
-credentials — intact. The application occupies 3.49 MB of the 8 MB slot.
+credentials — intact. The application occupies 3.59 MB of the 8 MB slot.
 
 ### RAM
 
@@ -108,6 +109,7 @@ pitfalls ([17](pitfalls.md#17-an-app-screen-is-452-px-tall-not-402) and
 | `main/app_assistant.cpp` | ~600 | assistant UI + level meter + state machine |
 | `main/xiaozhi_client.cpp` | ~950 | OTA pairing, WebSocket, Opus, mic/speaker tasks |
 | `main/app_music.cpp` | ~1080 | sequencer, synthesis, piano-roll UI |
+| `main/app_perplexe.cpp` | ~1000 | maze: levels, physics, IMU steering, rendering |
 | `main/icons/*.c` | 3 × 90 KB | launcher icons, generated |
 | `components/esp_brookesia` | vendored | the shell, with four patches |
 

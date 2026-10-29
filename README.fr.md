@@ -4,8 +4,8 @@
 
 <p align="center">
   <b>Firmware maison pour la Waveshare ESP32-S3-Touch-AMOLED-2.06.</b><br>
-  Un lanceur, une app Paramètres de sept pages, un assistant vocal et une boîte à musique<br>
-  générative — sur une montre AMOLED 410 × 502, écrit contre la vraie carte.
+  Un lanceur, une app Paramètres de sept pages, un assistant vocal, une boîte à<br>
+  musique générative et un labyrinthe à bille — sur une montre AMOLED 410 × 502.
 </p>
 
 <p align="center">
@@ -23,6 +23,7 @@
     <td align="center" valign="middle"><img src="docs/img/launcher-settings.png" width="176" alt="Lanceur, page 1 : Paramètres"><br><sub>page 1 — Paramètres</sub></td>
     <td align="center" valign="middle"><img src="docs/img/launcher-assistant.png" width="176" alt="Lanceur, page 2 : Assistant"><br><sub>page 2 — Assistant</sub></td>
     <td align="center" valign="middle"><img src="docs/img/icon-music.png" width="124" alt="Icône de l'app Musique"><br><sub>page 3 — Musique</sub></td>
+    <td align="center" valign="middle"><img src="docs/img/icon-perplexe.png" width="124" alt="Icône de l'app Perplexe"><br><sub>page 4 — Perplexe</sub></td>
   </tr>
 </table>
 
@@ -38,9 +39,10 @@ pixel et chaque décision sont lisibles — et où les échecs sont documentés 
 autant de soin que les fonctionnalités.
 
 Ce n'est pas une démonstration : le firmware démarre, se connecte au WiFi,
-règle son heure par NTP, lit sa propre batterie et fait tourner trois
-applications, dont un assistant vocal qui parle à un vrai serveur et un moteur
-musical qui compose pendant qu'il joue.
+règle son heure par NTP, lit sa propre batterie et fait tourner quatre
+applications, dont un assistant vocal qui parle à un vrai serveur, un moteur
+musical qui compose pendant qu'il joue, et un labyrinthe qu'on pilote en
+inclinant la montre.
 
 **Tout ce qui est écrit ici a été mesuré sur la carte.** Chaque valeur de la
 documentation (une largeur en pixels, un budget mémoire, un tempo) vient d'un
@@ -64,7 +66,8 @@ dit sans détour.
 | ✅ | Carte microSD | montage FAT, espace libre et nombre d'éléments |
 | ✅ | Assistant vocal | protocole XiaoZhi : appairage OTA, WebSocket, Opus 24 kHz |
 | ✅ | Musique générative | séquenceur pentatonique, synthèse de corde pincée, sans réseau |
-| ⚠️ | Tactile dans les apps | inopérant dans Assistant et Musique — voir les limites |
+| ✅ | Labyrinthe | Perplexe : dix niveaux générés sur 19 × 17 cases, pilotés par la centrale inertielle |
+| ⚠️ | Tactile dans les apps | fonctionne dans le lanceur, Paramètres et Perplexe ; inopérant dans Assistant |
 
 ## Flasher en une minute
 
@@ -84,14 +87,14 @@ partition `nvs` : les identifiants WiFi de la montre survivent. Options :
 sans écrire), `-Port COM7` si la carte n'est pas détectée.
 
 ```
-  montre.bin              3 486 160 bytes  @ 0x200000 sha256 aecb03997166e2ad...
+  montre.bin              3 589 296 bytes  @ 0x200000 sha256 51ca2508dba666b3...
 ```
 
 Équivalent manuel :
 
 ```powershell
 python -m esptool --chip esp32s3 -p COM4 -b 921600 --before default_reset `
-  --after hard_reset write_flash 0x200000 v3.5\montre.bin
+  --after hard_reset write_flash 0x200000 v4.0\montre.bin
 ```
 
 Journal de démarrage attendu :
@@ -117,7 +120,7 @@ $env:IDF_PATH = 'C:\Espressif\frameworks\esp-idf-v5.5.1'
 & "$env:IDF_PATH\export.ps1"
 
 cd watch-esp32
-idf.py build           # -> build/montre.bin, 3 486 160 octets
+idf.py build           # -> build/montre.bin, 3 589 296 octets
 idf.py -p COM4 -b 921600 flash monitor
 ```
 
@@ -125,7 +128,7 @@ Ne **jamais** lancer `idf.py set-target` sur un projet existant : cela
 régénère `sdkconfig` et perd les réglages de la carte (PSRAM octal à 80 MHz,
 flash 32 Mo, jeu de polices LVGL). La cible est déjà `esp32s3`.
 
-## Les trois applications
+## Les quatre applications
 
 **Paramètres** — sept pages : WiFi (scan, RSSI, saisie du mot de passe),
 Affichage, Son, Horloge, Capteurs, Stockage, Appareil. Toutes les valeurs sont
@@ -146,7 +149,19 @@ construites sur une table de sinus de 1024 points. L'interface est un piano
 roll 12 × 10 alimenté par douze masques de bits écrits par la tâche audio :
 aucun mutex, aucune allocation, seules les cases qui changent sont redessinées.
 
-## Les 21 pièges déjà payés
+**Perplexe** — un labyrinthe vu de dessus, 19 × 17 cases, dix niveaux générés
+par `tools/make_levels.py` et vérifiés par parcours en largeur : le but est
+toujours atteignable sans traverser un trou. La bille est poussée par
+l'accéléromètre, freinée par un doigt posé sur le plateau, renvoyée au dernier
+point de passage par une secousse. 100 points par niveau, −10 par chute,
+plancher 20 — et rien d'écrit en flash, la `nvs` garde les identifiants WiFi.
+
+La physique tourne à 40 ms avec quatre sous-pas et une collision axe par axe :
+la bille glisse le long des murs au lieu de s'y coller. Seuls l'ancien et le
+nouveau rectangle de la bille sont repeints, et les murs sont fusionnés en
+segments horizontaux — une quatre-vingtaine d'objets, pas 300.
+
+## Les 25 pièges déjà payés
 
 La plupart des projets embarqués documentent ce qui marche. Celui-ci documente
 aussi ce qui a coûté des journées : le pool LVGL qui ignorait silencieusement
@@ -177,12 +192,13 @@ mesure qui l'a identifié, et le correctif.
 
 ## Limites connues
 
-Liste honnête, à jour en v3.5 :
+Liste honnête, à jour en v4.0 :
 
-- **Le tactile ne répond pas dans les apps Assistant et Musique.** Le lanceur et
-  Paramètres fonctionnent. Ces deux apps n'ont donc **aucun bouton retour** : on
-  en sort en redémarrant la montre (RST). Trouver la cause est le premier point
-  de la feuille de route.
+- **Le tactile ne répond pas dans l'app Assistant**, et seulement là : le
+  lanceur, Paramètres et Perplexe reçoivent le doigt. Le défaut est donc dans
+  cette application, pas dans le routeur d'événements. Elle n'a **aucun bouton
+  retour** : on en sort en redémarrant la montre (RST). Trouver la cause reste
+  le premier point de la feuille de route.
 - **2 ou 3 lignes de pixels peuvent rester tout en haut** quand une app est
   ouverte avec un vrai doigt. Trois correctifs n'y ont rien changé et le défaut
   n'a jamais été reproduit hors de la montre, parce que les tests automatisés
@@ -199,11 +215,11 @@ Liste honnête, à jour en v3.5 :
 ## Versionnage
 
 `MAJEUR.MINEUR.CORRECTIF`, avec une règle propre au projet : le **MAJEUR
-n'augmente qu'à l'ajout d'une application** au lanceur. La v3.5 est donc la
-troisième génération d'applications (Paramètres, Assistant, Musique) avec cinq
-révisions de finition. Chaque incrément est étiqueté, décrit dans
-[`CHANGELOG.md`](CHANGELOG.md) et livré avec un binaire vérifié — voir
-[`docs/versioning.md`](docs/versioning.md).
+n'augmente qu'à l'ajout d'une application** au lanceur. La v4.0 est la
+quatrième génération (Paramètres, Assistant, Musique, Perplexe) ; les cinq
+révisions de v3.0 à v3.5 étaient de la finition, pas des fonctionnalités.
+Chaque incrément est étiqueté, décrit dans [`CHANGELOG.md`](CHANGELOG.md) et
+livré avec un binaire vérifié — voir [`docs/versioning.md`](docs/versioning.md).
 
 ## Crédits et licence
 

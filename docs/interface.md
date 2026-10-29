@@ -130,10 +130,11 @@ radius, vertical gradient, light top edge, white glyph centred and covering
 | `app_icon_settings` | slate `0x415074` → `0x161B26` | 8-tooth gear, `0xE9F1FF` |
 | `app_icon_assistant` | orange `0xFF9344` → `0xC23B06` | microphone, white |
 | `app_icon_music` | violet `0x7B5CF0` → `0x2A185C` | double eighth note, white |
+| `app_icon_perplexe` | teal `0x228C7A` → `0x0A2B2E` | maze grid and ball, white |
 
 ## 4. App palette
 
-Shared by all three apps, defined at the top of `app_settings.cpp` and repeated
+Shared by all four apps, defined at the top of `app_settings.cpp` and repeated
 in the other apps:
 
 | Macro | Value | Use |
@@ -201,6 +202,37 @@ Timbre in v3.5: **plucked string** (music box), 12 voices, one or two detuned
 sine components per note, short attack and exponential decay. The sequencer
 sends note-offs so the melody holds most of the eighth while the pad holds the
 whole bar.
+
+## 4 quater. Perplexe app geometry
+
+File: `main/app_perplexe.cpp`, levels in `main/levels_perplexe.h`.
+
+| Element | Geometry |
+|---|---|
+| Board | **19 × 17 cells of 20 px** = 380 × 340, placed at (15, 32) inside the app screen |
+| Status band | top, height 28 |
+| Score / level line | inside the band, 14 px |
+| Buttons | `REJOUER` and `QUITTER`, bottom row, 60 px high |
+| Ball | one 10 px object moved with `lv_obj_set_pos` |
+| Back button | `QUITTER` (touch works in this app) |
+
+The maze is drawn as **merged horizontal segments** — roughly 80 objects instead
+of 300 cells — and the ball is a single object, so a frame repaints only its old
+and new rectangles. No `lv_canvas` anywhere.
+
+Physics: `PER_ACC = 1150 px/s²`, damping 5.2/s, speed capped at 210 px/s, **four
+sub-steps per frame** (at 210 px/s and 40 ms a single step would cover 8 px and
+cross a 20 px wall). Collision is resolved axis by axis, which produces the slide
+along walls.
+
+Sensor: a dedicated task at **30 Hz, priority 3**, below the LVGL task at 4 —
+never I2C on the graphics task. It publishes the tilt in milli-g into atomics;
+the game loop only reads them.
+
+A finger on the board brakes (damping 24/s, push divided by 4). A shake,
+`||a| − 1| > 0.8 g` with 1.2 s of debounce, sends the ball back to the last
+checkpoint. 100 points per level, −10 per fall, floor 20 — **nothing is written
+to `nvs`**, which holds the WiFi credentials.
 
 ## 5. Exact list of component patches
 

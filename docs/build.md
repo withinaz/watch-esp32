@@ -35,17 +35,17 @@ Project build complete. To flash, run:
 and a binary at `build/montre.bin`:
 
 ```
-3 486 160 bytes   sha256 aecb0399...
+3 589 296 bytes   sha256 51ca2508...
 ```
 
 The first build resolves `dependencies.lock` and downloads LVGL 9.3,
 `esp_lvgl_port`, the Waveshare BSP, `esp_codec_dev`, `esp_websocket_client` and
 `78/esp-opus` into `managed_components/` (~165 MB, git-ignored).
 
-> A rebuild does **not** reproduce the reference binary byte for byte. It comes
-> out 3 486 160 bytes again, but ~97 bytes differ in a literal pool (0.003 %).
-> That is why `firmware/` ships the tested image: a rebuild proves the sources
-> compile, not that it is the same artefact.
+> A rebuild does **not** reproduce the reference binary byte for byte: a few
+> bytes differ in a literal pool, on a three-and-a-half megabyte image. That is
+> why `firmware/` ships the tested image: a rebuild proves the sources compile,
+> not that it is the same artefact.
 
 ## Never run `idf.py set-target`
 
@@ -85,7 +85,7 @@ Sanity values for v3.5:
 
 | | |
 |---|---|
-| Application | 3 486 160 bytes (of 8 MB) |
+| Application | 3 589 296 bytes (of 8 MB) |
 | Internal RAM free after display init | ~218 KB |
 | Compiler flags on `main` | `-Og`, **never `-O2`** ([pitfall 19](pitfalls.md#19-never-add--o2-to-the-main-component)) |
 
