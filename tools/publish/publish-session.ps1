@@ -163,7 +163,7 @@ function Get-MirrorEntries {
         }
     }
 
-    foreach ($name in @('make_icons.py', 'png2lvgl.py', 'snap.py', 'capture.py', 'mock_xiaozhi.py')) {
+    foreach ($name in @('make_icons.py', 'make_levels.py', 'png2lvgl.py', 'snap.py', 'capture.py', 'mock_xiaozhi.py')) {
         $src = Join-Path $ProjectPath "tools\$name"
         if (Test-Path $src) {
             [void]$entries.Add([pscustomobject]@{ Source = $src; Relative = "tools/$name" })
