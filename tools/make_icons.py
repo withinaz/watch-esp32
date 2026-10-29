@@ -240,6 +240,41 @@ def maze_mask():
     return layer
 
 
+def war_mask():
+    """Globe, missile et impact : la carte du monde et la frappe.
+
+    A 150 px, trois elements suffisent pour lire « guerre mondiale » : le
+    globe (cercle, un meridien, l'equateur), un missile en diagonale et une
+    etoile d'impact la ou il arrive.
+    """
+    layer = Image.new("L", (N, N), 0)
+    d = ImageDraw.Draw(layer)
+
+    def box(x0, y0, x1, y1):
+        return [x0 * SS, y0 * SS, x1 * SS, y1 * SS]
+
+    # globe : cercle, meridien, equateur
+    d.ellipse(box(22, 30, 122, 130), outline=255, width=int(8 * SS))
+    d.ellipse(box(56, 30, 88, 130), outline=255, width=int(5 * SS))
+    d.rounded_rectangle(box(24, 76, 120, 84), radius=4 * SS, fill=255)
+
+    # missile : corps, pointe, trainee
+    d.line([(34 * SS, 116 * SS), (92 * SS, 58 * SS)], fill=255, width=int(9 * SS))
+    d.polygon([(96 * SS, 54 * SS), (78 * SS, 60 * SS), (90 * SS, 72 * SS)], fill=255)
+    d.line([(30 * SS, 124 * SS), (40 * SS, 114 * SS)], fill=255, width=int(5 * SS))
+
+    # etoile d'impact, en haut a droite
+    cx, cy = 104.0, 44.0
+    for k in range(8):
+        a = k * math.pi / 4.0
+        d.line([((cx + 3.0 * math.cos(a)) * SS, (cy + 3.0 * math.sin(a)) * SS),
+                ((cx + 15.0 * math.cos(a)) * SS, (cy + 15.0 * math.sin(a)) * SS)],
+               fill=255, width=int(5 * SS))
+    d.ellipse([(cx - 6) * SS, (cy - 6) * SS, (cx + 6) * SS, (cy + 6) * SS], fill=255)
+
+    return layer
+
+
 # --------------------------------------------------------------------------
 # composition d'une icone
 # --------------------------------------------------------------------------
@@ -393,6 +428,15 @@ ICONS = [
         rim=(0xBF, 0xF0, 0xE4),
         mask=maze_mask,
         glyph=(0xEC, 0xFF, 0xF8),
+    ),
+    dict(
+        name="app_icon_guerre",
+        comment="Icone de l'application Guerre : globe, missile et impact sur tuile rouge braise.",
+        tile_top=(0xB0, 0x2E, 0x4A),
+        tile_bottom=(0x39, 0x0A, 0x16),
+        rim=(0xFF, 0xC9, 0xCB),
+        mask=war_mask,
+        glyph=(0xFF, 0xF3, 0xF3),
     ),
 ]
 

@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 extern const lv_image_dsc_t app_icon_assistant;
+extern const lv_image_dsc_t app_icon_guerre;
 extern const lv_image_dsc_t app_icon_music;
 extern const lv_image_dsc_t app_icon_perplexe;
 extern const lv_image_dsc_t app_icon_settings;

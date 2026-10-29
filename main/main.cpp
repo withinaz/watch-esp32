@@ -29,6 +29,7 @@
 #include "app_assistant.hpp"
 #include "app_music.hpp"
 #include "app_perplexe.hpp"
+#include "app_war.hpp"
 
 #if __has_include("xz_test.h")
 #include "xz_test.h"
@@ -423,6 +424,7 @@ static void mussnap_task(void *arg)
     vTaskDelete(nullptr);
 }
 #endif
+
 #endif /* captures de diagnostic */
 
 #define LVGL_PORT_INIT_CONFIG() \
@@ -796,9 +798,14 @@ extern "C" void app_main(void)
     ESP_BROOKESIA_CHECK_FALSE_EXIT(
         (s_phone->installApp(perplexe) >= 0), "Installation de l'app Perplexe echouee");
 
+    AppWar *war = new AppWar();
+    ESP_BROOKESIA_CHECK_NULL_EXIT(war, "Creation de l'app Guerre impossible");
+    ESP_BROOKESIA_CHECK_FALSE_EXIT(
+        (s_phone->installApp(war) >= 0), "Installation de l'app Guerre echouee");
+
     /* Le lanceur tient une icone par page : chaque app installee occupe donc
        sa propre page (Parametres page 1, Assistant page 2, Musique page 3,
-       Perplexe page 4). */
+       Perplexe page 4, Guerre page 5). */
 
     lv_timer_create(status_timer_cb, 1000, s_phone);
 

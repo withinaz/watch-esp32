@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this firmware. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
@@ -14,6 +14,36 @@ its own version rule: **MAJOR only increases when an application is added**
   [docs/auto-publish.md](docs/auto-publish.md).
 
 Candidate work is listed in [ROADMAP.md](ROADMAP.md).
+
+## [5.1.0] - 2026-10-30
+
+Published automatically from the development session as **v5.1**.
+Notes below are the session's own, in French.
+
+| | |
+|---|---|
+| Fichier | `v5.1/montre-v5.1_0x200000.bin` |
+| Taille | 3 692 736 octets |
+| SHA-256 | `6a90a757e96b5ec2a25338ad800bd6197e7fa10b1b38f522604b4d9474423507` |
+| Applications | Parametres (1), Assistant (2), Musique (3), Perplexe (4), **Guerre (5)** |
+| Date | 2026-10-29 |
+
+Revision de l'app Guerre, aucun changement d'application :
+
+- **missiles et explosions 2 a 3 fois plus gros** : tete de 7 x 7 px (disque
+  a la couleur du continent, coeur blanc de 3 x 3), trainee de neuf blocs de
+  2 x 2 px, explosion dont l'anneau va jusqu'a 33 px de rayon sur 3 px
+  d'epaisseur, avec coeur blanc et huit eclats ;
+- **fin du monde** : quand **90 % des cases de terre** ont un cratere (723
+  cases sur 804), la guerre s'arrete, **« THE END »** s'affiche en blanc, gras
+  (contour de 3 px), au milieu de la carte et **au-dessus** d'elle, la carte
+  reste figee **3 secondes**, puis tout est remis a zero : carte neuve, jauges
+  a zero, nouvelle paire de continents. Boucle sans fin.
+- le gel de la carte pendant les 3 secondes evite de payer le redessin du
+  texte a chaque image (le rythme tombait a ~12 i/s sinon).
+
+Image: `firmware/v5.1/montre.bin`,
+3 692 736 bytes, SHA-256 `6a90a757e96b5ec2a25338ad800bd6197e7fa10b1b38f522604b4d9474423507`, write at `0x200000`.
 
 ## [4.0.0] - 2026-10-29
 
@@ -183,6 +213,7 @@ Image: `firmware/v4.0/montre.bin`,
 - Display, touch, WiFi, NTP, RTC, battery gauge, IMU and audio, all working.
 
 [Unreleased]: https://github.com/withinaz/watch-esp32/compare/v3.5.0...HEAD
+[5.1.0]: https://github.com/withinaz/watch-esp32/releases/tag/v5.1.0
 [4.0.0]: https://github.com/withinaz/watch-esp32/releases/tag/v4.0.0
 [3.5.0]: https://github.com/withinaz/watch-esp32/releases/tag/v3.5.0
 [3.4.0]: https://github.com/withinaz/watch-esp32/releases/tag/v3.4.0
