@@ -28,6 +28,7 @@
 #include "app_settings.hpp"
 #include "app_assistant.hpp"
 #include "app_music.hpp"
+#include "app_perplexe.hpp"
 
 #if __has_include("xz_test.h")
 #include "xz_test.h"
@@ -790,8 +791,14 @@ extern "C" void app_main(void)
     ESP_BROOKESIA_CHECK_FALSE_EXIT(
         (s_phone->installApp(music) >= 0), "Installation de l'app Musique echouee");
 
+    AppPerplexe *perplexe = new AppPerplexe();
+    ESP_BROOKESIA_CHECK_NULL_EXIT(perplexe, "Creation de l'app Perplexe impossible");
+    ESP_BROOKESIA_CHECK_FALSE_EXIT(
+        (s_phone->installApp(perplexe) >= 0), "Installation de l'app Perplexe echouee");
+
     /* Le lanceur tient une icone par page : chaque app installee occupe donc
-       sa propre page (Parametres page 1, Assistant page 2, Musique page 3). */
+       sa propre page (Parametres page 1, Assistant page 2, Musique page 3,
+       Perplexe page 4). */
 
     lv_timer_create(status_timer_cb, 1000, s_phone);
 

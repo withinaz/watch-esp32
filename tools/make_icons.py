@@ -208,6 +208,38 @@ def note_mask():
     return layer.rotate(-11, resample=Image.BICUBIC, center=(cx, cy))
 
 
+def maze_mask():
+    """Labyrinthe et sa bille : cadre ouvert, deux cloisons, la bille au sol.
+
+    Dessine volontairement simple : a 150 px, un vrai labyrinthe se lit comme
+    une tache. Un cadre perce d'une ouverture, une cloison en T et une bille
+    dans le couloir du bas suffisent a dire « labyrinthe » et « bille ».
+    """
+    layer = Image.new("L", (N, N), 0)
+    d = ImageDraw.Draw(layer)
+
+    def box(x0, y0, x1, y1):
+        return [x0 * SS, y0 * SS, x1 * SS, y1 * SS]
+
+    # cadre exterieur
+    d.rounded_rectangle(box(30, 30, 120, 120), radius=18 * SS,
+                        outline=255, width=int(9 * SS))
+
+    # ouverture dans le mur de droite (la sortie)
+    d.rectangle(box(108, 74, 126, 94), fill=0)
+
+    # cloison horizontale, de la paroi gauche vers la droite
+    d.rounded_rectangle(box(30, 62, 84, 71), radius=4.5 * SS, fill=255)
+    # cloison verticale, de la paroi haute jusqu'a la precedente (forme en T)
+    d.rounded_rectangle(box(84, 30, 93, 71), radius=4.5 * SS, fill=255)
+
+    # la bille, dans le couloir du bas
+    r = 11 * SS
+    d.ellipse([66 * SS - r, 96 * SS - r, 66 * SS + r, 96 * SS + r], fill=255)
+
+    return layer
+
+
 # --------------------------------------------------------------------------
 # composition d'une icone
 # --------------------------------------------------------------------------
@@ -352,6 +384,15 @@ ICONS = [
         rim=(0xD8, 0xCB, 0xFF),
         mask=note_mask,
         glyph=(0xFF, 0xFF, 0xFF),
+    ),
+    dict(
+        name="app_icon_perplexe",
+        comment="Icone de l'application Perplexe : labyrinthe et bille sur tuile bleu-vert.",
+        tile_top=(0x22, 0x8C, 0x7A),
+        tile_bottom=(0x0A, 0x2B, 0x2E),
+        rim=(0xBF, 0xF0, 0xE4),
+        mask=maze_mask,
+        glyph=(0xEC, 0xFF, 0xF8),
     ),
 ]
 

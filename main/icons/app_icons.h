@@ -12,6 +12,7 @@ extern "C" {
 
 extern const lv_image_dsc_t app_icon_assistant;
 extern const lv_image_dsc_t app_icon_music;
+extern const lv_image_dsc_t app_icon_perplexe;
 extern const lv_image_dsc_t app_icon_settings;
 
 #ifdef __cplusplus

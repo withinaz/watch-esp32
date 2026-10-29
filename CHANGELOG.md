@@ -15,6 +15,51 @@ its own version rule: **MAJOR only increases when an application is added**
 
 Candidate work is listed in [ROADMAP.md](ROADMAP.md).
 
+## [4.0.0] - 2026-10-29
+
+Published automatically from the development session as **v4.0**.
+Notes below are the session's own, in French.
+
+| | |
+|---|---|
+| Fichier | `v4.0/montre-v4.0_0x200000.bin` |
+| Taille | 3 589 296 octets |
+| SHA-256 | `51ca2508dba666b339d33a8d35b85d54eb90d478980369837379327daac34d43` |
+| Applications | Parametres (1), Assistant (2), Musique (3), **Perplexe (4)** |
+| Date | 2026-10-28 |
+
+**Le jeu.** Un labyrinthe vu de dessus : la bille roule quand on incline la
+montre, le doigt pose sur le plateau la freine, une secousse la ramene au
+dernier point de passage. Dix niveaux de difficulte croissante, generes par
+`tools/make_levels.py` puis **verifies par parcours en largeur** : le but est
+toujours atteignable sans traverser un trou. 100 points par niveau, moins 10
+par chute, plancher 20.
+
+**Deux defauts trouves en chemin, qui n'etaient pas dans le jeu.**
+
+1. **Le QMI8658 repond en `0x6B`, pas en `0x6A`.** La page Capteurs de l'app
+   Parametres affichait donc « QMI8658 introuvable » depuis toujours. Les deux
+   applications essaient maintenant les deux adresses.
+2. **L'echelle de l'accelerometre etait fausse d'un facteur 2.** CTRL2 = 0x95
+   selectionne la plage +-4 g, soit **8192 points par g** et non 4096 : au
+   repos on lisait 2,00 g. Corrige aux deux endroits ; mesure apres correctif :
+   `|a| = 1,00 g`.
+
+**Les axes sont tournes d'un quart de tour.** Releve sur la montre : incliner
+le bord droit vers le bas faisait *monter* la bille, le bord bas la faisait
+aller a *droite*. Le capteur est monte a 90 degres ; `imu_to_screen()` remet
+ses axes dans le repere de l'ecran (X du capteur = bas de l'ecran, Y = gauche).
+
+**Le tactile est confirme dans cette application** : les boutons REJOUER et
+QUITTER repondent au doigt. C'est la premiere application tactile depuis l'app
+Parametres ; l'Assistant, lui, reste muet au doigt.
+
+Verifie : demarrage propre, quatre pages de lanceur (`create a new page`
+trois fois), `Hash of data verified`, zero erreur, WiFi et NTP inchanges.
+
+Image: `firmware/v4.0/montre.bin`,
+3 589 296 bytes, SHA-256 `51ca2508dba666b339d33a8d35b85d54eb90d478980369837379327daac34d43`, write at `0x200000`.
+
 ## [3.5.0] — 2026-10-27
 
 ### Added
@@ -138,5 +183,6 @@ Candidate work is listed in [ROADMAP.md](ROADMAP.md).
 - Display, touch, WiFi, NTP, RTC, battery gauge, IMU and audio, all working.
 
 [Unreleased]: https://github.com/withinaz/watch-esp32/compare/v3.5.0...HEAD
+[4.0.0]: https://github.com/withinaz/watch-esp32/releases/tag/v4.0.0
 [3.5.0]: https://github.com/withinaz/watch-esp32/releases/tag/v3.5.0
 [3.4.0]: https://github.com/withinaz/watch-esp32/releases/tag/v3.4.0

@@ -179,6 +179,13 @@ static lv_obj_t *make_action(lv_obj_t *parent, const char *text, lv_event_cb_t c
 /* QMI8658 : accelerometre + gyroscope                                 */
 /* ------------------------------------------------------------------ */
 #define QMI8658_ADDR 0x6A
+/* Sur cette carte le capteur repond en 0x6B (broche SA0 a l'etat haut) :
+   qmi_init() essaie les deux adresses et retient celle qui repond. */
+static uint8_t s_qmi_addr = QMI8658_ADDR;
+/* CTRL2 = 0x95 : plage +-4 g, soit 8192 LSB par g. Verification faite sur
+   la carte : au repos la norme de l'acceleration vaut 1.00 g. */
+#define ACC_LSB      8192.0f
+#define GYR_LSB      64.0f
 
 static esp_err_t qmi_read(uint8_t reg, uint8_t *buf, size_t n)
 {
@@ -186,7 +193,7 @@ static esp_err_t qmi_read(uint8_t reg, uint8_t *buf, size_t n)
     if (!bus) return ESP_ERR_INVALID_STATE;
     i2c_device_config_t cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address  = QMI8658_ADDR,
+        .device_address  = s_qmi_addr,
         .scl_speed_hz    = 400000,
     };
     i2c_master_dev_handle_t dev = nullptr;
@@ -203,7 +210,7 @@ static esp_err_t qmi_write(uint8_t reg, uint8_t val)
     if (!bus) return ESP_ERR_INVALID_STATE;
     i2c_device_config_t cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address  = QMI8658_ADDR,
+        .device_address  = s_qmi_addr,
         .scl_speed_hz    = 400000,
     };
     i2c_master_dev_handle_t dev = nullptr;
@@ -217,17 +224,24 @@ static esp_err_t qmi_write(uint8_t reg, uint8_t val)
 
 static bool qmi_init(void)
 {
-    uint8_t who = 0;
-    if (qmi_read(0x00, &who, 1) != ESP_OK) return false;
-    if (who != 0x05) {
-        ESP_LOGW(TAG, "QMI8658 absent (WHO_AM_I = 0x%02X)", who);
-        return false;
+    /* Le capteur est en 0x6B sur cette carte, mais on essaie les deux
+       adresses : c'est une broche de la carte qui decide. */
+    static const uint8_t addrs[2] = {0x6A, 0x6B};
+    for (int i = 0; i < 2; i++) {
+        s_qmi_addr = addrs[i];
+        uint8_t who = 0;
+        if (qmi_read(0x00, &who, 1) == ESP_OK && who == 0x05) {
+            qmi_write(0x02, 0x40);   /* ADDR_AI */
+            qmi_write(0x03, 0x95);   /* accelerometre */
+            qmi_write(0x04, 0xD5);   /* gyroscope */
+            qmi_write(0x08, 0x03);   /* CTRL7 : active accel + gyro */
+            ESP_LOGI(TAG, "QMI8658 trouve a 0x%02X", addrs[i]);
+            return true;
+        }
     }
-    qmi_write(0x02, 0x40);   /* ADDR_AI */
-    qmi_write(0x03, 0x95);   /* accelerometre */
-    qmi_write(0x04, 0xD5);   /* gyroscope */
-    qmi_write(0x08, 0x03);   /* CTRL7 : active accel + gyro */
-    return true;
+    s_qmi_addr = QMI8658_ADDR;
+    ESP_LOGW(TAG, "QMI8658 introuvable (ni 0x6A ni 0x6B)");
+    return false;
 }
 
 /* ------------------------------------------------------------------ */
@@ -579,12 +593,12 @@ void AppSettings::build_sensors(void)
         int16_t gy = (int16_t)((raw[9] << 8) | raw[8]);
         int16_t gz = (int16_t)((raw[11] << 8) | raw[10]);
 
-        if (s_lbl_ax) lv_label_set_text_fmt(s_lbl_ax, "X %+.2f", ax / 4096.0f);
-        if (s_lbl_ay) lv_label_set_text_fmt(s_lbl_ay, "Y %+.2f", ay / 4096.0f);
-        if (s_lbl_az) lv_label_set_text_fmt(s_lbl_az, "Z %+.2f", az / 4096.0f);
-        if (s_lbl_gx) lv_label_set_text_fmt(s_lbl_gx, "X %+.1f", gx / 64.0f);
-        if (s_lbl_gy) lv_label_set_text_fmt(s_lbl_gy, "Y %+.1f", gy / 64.0f);
-        if (s_lbl_gz) lv_label_set_text_fmt(s_lbl_gz, "Z %+.1f", gz / 64.0f);
+        if (s_lbl_ax) lv_label_set_text_fmt(s_lbl_ax, "X %+.2f", ax / ACC_LSB);
+        if (s_lbl_ay) lv_label_set_text_fmt(s_lbl_ay, "Y %+.2f", ay / ACC_LSB);
+        if (s_lbl_az) lv_label_set_text_fmt(s_lbl_az, "Z %+.2f", az / ACC_LSB);
+        if (s_lbl_gx) lv_label_set_text_fmt(s_lbl_gx, "X %+.1f", gx / GYR_LSB);
+        if (s_lbl_gy) lv_label_set_text_fmt(s_lbl_gy, "Y %+.1f", gy / GYR_LSB);
+        if (s_lbl_gz) lv_label_set_text_fmt(s_lbl_gz, "Z %+.1f", gz / GYR_LSB);
 
         uint8_t t8[2] = {0};
         if (s_lbl_tp && qmi_read(0x33, t8, 2) == ESP_OK) {
