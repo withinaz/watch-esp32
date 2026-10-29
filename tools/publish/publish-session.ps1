@@ -211,10 +211,11 @@ function Get-LatestBackupImage {
     if (-not (Test-Path $BackupPath)) { return $null }
 
     $best = $null
-    foreach ($dir in (Get-ChildItem $BackupPath -Directory | Where-Object { $_.Name -match '^v(\d+)\.(\d+)$' })) {
-        $null = $dir.Name -match '^v(\d+)\.(\d+)$'
+    # the session names its folders both ways: v3.5 and v4 (meaning 4.0)
+    foreach ($dir in (Get-ChildItem $BackupPath -Directory | Where-Object { $_.Name -match '^v(\d+)(?:\.(\d+))?$' })) {
+        $null = $dir.Name -match '^v(\d+)(?:\.(\d+))?$'
         $major = [int]$Matches[1]
-        $minor = [int]$Matches[2]
+        $minor = if ($Matches[2]) { [int]$Matches[2] } else { 0 }
 
         $image = Get-ChildItem $dir.FullName -File -Filter '*0x200000.bin' -ErrorAction SilentlyContinue |
                  Select-Object -First 1
