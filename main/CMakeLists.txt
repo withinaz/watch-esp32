@@ -1,10 +1,10 @@
 idf_component_register(
     SRCS "main.cpp" "app_settings.cpp" "app_assistant.cpp" "app_music.cpp"
-         "app_perplexe.cpp" "app_war.cpp"
+         "app_perplexe.cpp" "app_war.cpp" "app_fight.cpp"
          "xiaozhi_client.cpp"
          "icons/app_icon_settings.c" "icons/app_icon_assistant.c"
          "icons/app_icon_music.c" "icons/app_icon_perplexe.c"
-         "icons/app_icon_guerre.c"
+         "icons/app_icon_guerre.c" "icons/app_icon_fight.c"
     INCLUDE_DIRS "."
 )
 

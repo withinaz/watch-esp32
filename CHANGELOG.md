@@ -15,6 +15,90 @@ its own version rule: **MAJOR only increases when an application is added**
 
 Candidate work is listed in [ROADMAP.md](ROADMAP.md).
 
+## [7.1.0] - 2026-10-30
+
+Published automatically from the development session as **v7.1**.
+Notes below are the session's own, in French.
+
+| | |
+|---|---|
+| Fichier | `v7.1/montre-v7.1_0x200000.bin` |
+| Taille | 3 794 080 octets |
+| SHA-256 | `c7fcf2bffcca60851520225694bf9f9ce81b2ce979333e25b7244f42dd8e21c7` |
+| Applications | Parametres (1), Assistant (2), Musique (3), Perplexe (4), Guerre (5), Fight (6) |
+| Date | 2026-10-30 |
+
+Correctif : les appuis sur les combattants ne faisaient rien — seule la croix
+de fermeture repondait.
+
+Cause : sur cette carte, un objet LVGL ne recoit le doigt que s'il porte
+`LV_OBJ_FLAG_CLICKABLE`. Le canevas du jeu ne l'avait pas (un `lv_canvas`
+n'est pas cliquable par defaut), contrairement au plateau de Perplexe qui le
+pose explicitement ; les appuis remontaient au parent sans atteindre le
+gestionnaire.
+
+Correctifs :
+
+- `LV_OBJ_FLAG_CLICKABLE` sur le canevas, et sur la racine en secours ;
+- reaction des l'**appui** (`LV_EVENT_PRESSED`) et non au relachement : un jeu
+  de combat doit repondre au premier contact ;
+- lecture du peripherique d'entree avec repli sur le premier declare ;
+- journal a chaque appui (`doigt (x,y) -> Ryo/Kai`) pour diagnostiquer sans
+  reflasher.
+
+Verifie au doigt sur la montre : 22 appuis enregistres, coordonnees conformes
+(140 a 185 en x pour Ryo, 258 a 303 pour Kai), attaques declenchees a chaque
+fois, aucune erreur du pilote d'ecran, aucune panique.
+
+## v7 — Fight : jeu de combat 16 bits  *(remplacee par la v7.1)*
+
+| | |
+|---|---|
+| Fichier | `v7/montre-v7_0x200000.bin` |
+| Taille | 3 793 808 octets |
+| SHA-256 | `a2d82dea5fa511c5a78039c9049d7f2aec086c87440cd5abca8d3b49b1434e08` |
+| Applications | Parametres (1), Assistant (2), Musique (3), Perplexe (4), Guerre (5), **Fight (6)** |
+| Date | 2026-10-30 |
+
+Sixieme application : un jeu de combat facon borne d'arcade, decor 16 bits
+tres sature (rue au coucher du soleil, skyline, soleil a rayures, foule,
+sol en perspective).
+
+Regles :
+
+- deux combattants pixel art de 66 x 88 pixels d'art, affiches en 3x
+  (198 x 264 px) : **Ryo** (gi rouge et or, cheveux noirs) a gauche, **Kai**
+  (gi bleu et cyan, cheveux blonds) a droite ;
+- **10 appuis par combattant** : un appui sur la moitie gauche fait attaquer
+  Ryo, un appui sur la moitie droite fait attaquer Kai. Le compteur
+  `ROUND n/10` avance quand les deux ont frappe une fois (un round = un
+  echange) ; quand un combattant a ses dix appuis, sa zone devient inerte ;
+- **5 attaques par combattant**, tirees au hasard a chaque appui, chacune avec
+  son animation de 12 images (garde, arme, frappe, impact, retour) et son
+  poids : JAB 7, CROCHET 11, PIED HAUT 14, UPPERCUT 17, HADOKEN 22 pour Ryo ;
+  GRIFFE 7, GENOU 11, BALAYAGE 14, DOUBLE 17, ONDE 22 pour Kai ;
+- **point de choc** : un rond blanc plein, cercle d'un anneau magenta, pose sur
+  la partie du corps touchee (tete, machoire, menton, torse, ventre, jambe) ;
+  la victime encaisse en blanc deux images et recule ;
+- **fin** : apres les dix rounds, le vainqueur est celui qui a le plus de vie
+  (240 points de depart, barres segmentees en haut). Un bandeau `WINNER`
+  clignote au-dessus de sa tete, l'autre s'affaisse, puis tout repart de zero
+  apres 4,2 s ;
+- **K.O.** : si une barre tombe a zero avant la fin, le combat s'arrete la et
+  l'autre gagne (filet de securite, jamais atteint avec 240 points de vie).
+
+Rendu : un seul canevas de 410 x 396 place a y=56. Le decor complet est peint
+une fois (PSRAM), puis seule la bande des combattants (380 x 270) est
+restauree, redessinee et invalidee a chaque image d'attaque ; au repos, rien
+n'est redessine. Cadence de 45 ms (22 images/s).
+
+Mesures : match complet de 20 attaques, 0 erreur du pilote d'ecran, 0 panique,
+vainqueur au point pres (109 a 105). Captures de controle : garde, impact,
+bandeau du vainqueur.
+
+Image: `firmware/v7.1/montre.bin`,
+3 794 080 bytes, SHA-256 `c7fcf2bffcca60851520225694bf9f9ce81b2ce979333e25b7244f42dd8e21c7`, write at `0x200000`.
+
 ## [5.1.0] - 2026-10-30
 
 Published automatically from the development session as **v5.1**.
@@ -213,6 +297,7 @@ Image: `firmware/v4.0/montre.bin`,
 - Display, touch, WiFi, NTP, RTC, battery gauge, IMU and audio, all working.
 
 [Unreleased]: https://github.com/withinaz/watch-esp32/compare/v3.5.0...HEAD
+[7.1.0]: https://github.com/withinaz/watch-esp32/releases/tag/v7.1.0
 [5.1.0]: https://github.com/withinaz/watch-esp32/releases/tag/v5.1.0
 [4.0.0]: https://github.com/withinaz/watch-esp32/releases/tag/v4.0.0
 [3.5.0]: https://github.com/withinaz/watch-esp32/releases/tag/v3.5.0

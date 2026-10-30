@@ -275,6 +275,79 @@ def war_mask():
     return layer
 
 
+def fight_mask():
+    """Deux poings qui se rencontrent, eclat au milieu.
+
+    A 150 px, un combat se lit avec deux poings et un choc : les avant-bras
+    et les poings en contour, les articulations en traits, et une etoile
+    pleine au point d'impact.
+    """
+    layer = Image.new("L", (N, N), 0)
+    d = ImageDraw.Draw(layer)
+
+    def box(x0, y0, x1, y1):
+        return [x0 * SS, y0 * SS, x1 * SS, y1 * SS]
+
+    # poing gauche : avant-bras puis poing, doigts vers l'adversaire
+    d.rounded_rectangle(box(0, 62, 38, 90), radius=12 * SS, outline=255, width=int(8 * SS))
+    d.rounded_rectangle(box(34, 46, 68, 98), radius=17 * SS, outline=255, width=int(9 * SS))
+    for x in (52, 58, 64):
+        d.line([(x * SS, 54 * SS), (x * SS, 90 * SS)], fill=255, width=int(5 * SS))
+    d.rounded_rectangle(box(30, 88, 52, 102), radius=7 * SS, outline=255, width=int(6 * SS))
+
+    # poing droit, en miroir
+    d.rounded_rectangle(box(112, 62, 150, 90), radius=12 * SS, outline=255, width=int(8 * SS))
+    d.rounded_rectangle(box(82, 46, 116, 98), radius=17 * SS, outline=255, width=int(9 * SS))
+    for x in (86, 92, 98):
+        d.line([(x * SS, 54 * SS), (x * SS, 90 * SS)], fill=255, width=int(5 * SS))
+    d.rounded_rectangle(box(98, 88, 120, 102), radius=7 * SS, outline=255, width=int(6 * SS))
+
+    # eclat du choc
+    cx, cy = 75.0, 72.0
+    for k in range(8):
+        a = k * math.pi / 4.0
+        r0 = 7.0 if k % 2 == 0 else 5.0
+        r1 = 31.0 if k % 2 == 0 else 21.0
+        d.line([((cx + r0 * math.cos(a)) * SS, (cy + r0 * math.sin(a)) * SS),
+                ((cx + r1 * math.cos(a)) * SS, (cy + r1 * math.sin(a)) * SS)],
+               fill=255, width=int(7 * SS))
+    d.ellipse([(cx - 10) * SS, (cy - 10) * SS, (cx + 10) * SS, (cy + 10) * SS], fill=255)
+
+    return layer
+
+
+def block_mask():
+    """Bloc en perspective, rempli de transactions.
+
+    A 150 px, un bloc se lit comme un cube : face avant, dessus, cote droit.
+    La grille de la face avant dit « fait de transactions » ; sans elle, ce
+    n'est qu'un cube et l'icone ne parle plus.
+    """
+    layer = Image.new("L", (N, N), 0)
+    d = ImageDraw.Draw(layer)
+
+    def box(x0, y0, x1, y1):
+        return [x0 * SS, y0 * SS, x1 * SS, y1 * SS]
+
+    # dessus et cote droit, decales de (+22, -22)
+    d.polygon([(30 * SS, 58 * SS), (52 * SS, 36 * SS), (122 * SS, 36 * SS), (100 * SS, 58 * SS)],
+              outline=255, width=int(6 * SS))
+    d.polygon([(100 * SS, 58 * SS), (122 * SS, 36 * SS), (122 * SS, 106 * SS), (100 * SS, 128 * SS)],
+              outline=255, width=int(6 * SS))
+
+    # face avant
+    d.rectangle(box(30, 58, 100, 128), outline=255, width=int(6 * SS))
+
+    # les transactions : quatre colonnes sur trois rangees
+    for row in range(3):
+        for col in range(4):
+            x = 36 + col * 15
+            y = 72 + row * 15
+            d.rounded_rectangle(box(x, y, x + 11, y + 11), radius=2 * SS, fill=255)
+
+    return layer
+
+
 # --------------------------------------------------------------------------
 # composition d'une icone
 # --------------------------------------------------------------------------
@@ -437,6 +510,15 @@ ICONS = [
         rim=(0xFF, 0xC9, 0xCB),
         mask=war_mask,
         glyph=(0xFF, 0xF3, 0xF3),
+    ),
+    dict(
+        name="app_icon_fight",
+        comment="Icone de l'application Fight : deux poings et l'eclat du choc sur tuile magenta.",
+        tile_top=(0xFF, 0x2E, 0x7A),
+        tile_bottom=(0x4A, 0x0A, 0x2E),
+        rim=(0xFF, 0xD8, 0xE8),
+        mask=fight_mask,
+        glyph=(0xFF, 0xF4, 0xF8),
     ),
 ]
 
